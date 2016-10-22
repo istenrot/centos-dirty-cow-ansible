@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Check Linux distro
+    fail: msg="FAIL! This is not a CentOS 5, 6 or 7 distribution."
+    when: ansible_distribution != "CentOS"
+  - name: Figure out kernel version
+    command: uname -r
+    register: uname
+  - name: Install kernel debuginfo packages
+    yum: state=installed enablerepo="base-debuginfo" name="{{ item }}"
+    with_items:
+      - "kernel-debuginfo-{{ uname.stdout }}"
+      - "kernel-devel-{{ uname.stdout }}"
+  - name: Install SystemTap
+    yum: state=latest name="systemtap"
+  - name: Copy CVE-2016-5195.stp to the host
+    copy: src=files/CVE-2016-5195.stp dest=/root/CVE-2016-5195.stp
+  - name: Create a SystemTap module
+    command: stap -g -p 4 CVE-2016-5195.stp
+    register: stap_module
+    args:
+      chdir: /root
+  - name: Load the SystemTap module
+    command: staprun -L "{{ stap_module.stdout }}"
+    register: staprun
+  - debug: msg="{{ staprun.stderr }}"
