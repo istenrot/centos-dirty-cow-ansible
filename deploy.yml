@@ -3,16 +3,26 @@
   become: yes
   tasks:
   - name: Check Linux distro
-    fail: msg="FAIL! This is not a CentOS 5, 6 or 7 distribution."
-    when: ansible_distribution != "CentOS"
+    fail: msg="FAIL! This is not a CentOS or Scientific Linux distribution."
+    when: ansible_distribution != "CentOS" and ansible_distribution != "Scientific"
+  - name: Check Linux distro major version
+    fail: msg="FAIL! This is not a EL5, EL6 or EL7 distribution."
+    when: ansible_distribution_major_version != "5" and ansible_distribution_major_version != "6" and ansible_distribution_major_version != "7"
   - name: Figure out kernel version
     command: uname -r
     register: uname
-  - name: Install kernel debuginfo packages
+  - name: Install CentOS kernel debuginfo packages
     yum: state=installed enablerepo="base-debuginfo" name="{{ item }}"
     with_items:
       - "kernel-debuginfo-{{ uname.stdout }}"
       - "kernel-devel-{{ uname.stdout }}"
+    when: ansible_distribution == "CentOS"
+  - name: Install Scientific Linux kernel debuginfo packages
+    yum: state=installed enablerepo="sl-debuginfo" name="{{ item }}"
+    with_items:
+      - "kernel-debuginfo-{{ uname.stdout }}"
+      - "kernel-devel-{{ uname.stdout }}"
+    when: ansible_distribution == "Scientific"
   - name: Install SystemTap
     yum: state=latest name="systemtap"
   - name: Copy CVE-2016-5195.stp to the host

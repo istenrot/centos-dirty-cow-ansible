@@ -1,5 +1,5 @@
-# centos-dirty-cow-ansible
-Ansible playbook to mitigate CVE-2016-5195 on CentOS with SystemTap.
+# Ansible CVE-2016-5195 mitigation playbook
+Ansible playbook to mitigate CVE-2016-5195 on CentOS/Scientific Linux with SystemTap.
 
 Automating this mitigation recipe found on Red Hat Bugzilla:
 [https://bugzilla.redhat.com/show_bug.cgi?id=1384344#c13](https://bugzilla.redhat.com/show_bug.cgi?id=1384344#c13)
